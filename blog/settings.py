@@ -40,7 +40,7 @@ INSTALLED_APPS = [
     'django.contrib.staticfiles',
     'rest_framework',
     'rest_framework.authtoken',
-    
+    'corsheaders',
     'posts',
     'users',
 ]
@@ -53,6 +53,8 @@ MIDDLEWARE = [
     'django.contrib.auth.middleware.AuthenticationMiddleware',
     'django.contrib.messages.middleware.MessageMiddleware',
     'django.middleware.clickjacking.XFrameOptionsMiddleware',
+    "corsheaders.middleware.CorsMiddleware",
+    "django.middleware.common.CommonMiddleware",
 ]
 
 ROOT_URLCONF = 'blog.urls'
@@ -131,3 +133,16 @@ DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
 
 MEDIA_URL = '/media/'
 MEDIA_ROOT = os.path.join(BASE_DIR, 'media')
+
+
+# CORS ALLOWED ORIGINS
+CORS_ALLOWED_ORIGINS = [
+    'http://localhost:8080',
+]
+
+
+## google auth credentials
+GOOGLE_CLIENT_SECRET = "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"
+GOOGLE_CLIENT_ID = "57380884923-frj0eg0bq5l73at4v990eruqc57f7eu9.apps.googleusercontent.com"
+GOOGLE_OAUTH_ENDPOINT = "https://oauth2.googleapis.com/token"
+GOOGLE_USERINFO_URL = "https://www.googleapis.com/oauth2/v2/userinfo"

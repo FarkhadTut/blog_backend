@@ -7,11 +7,13 @@ from .serializers import ProfileSerializer, UserSerializer
 from rest_framework import status
 from rest_framework.authtoken.models import Token
 from django.contrib.auth.models import User
-from django.shortcuts import get_object_or_404
+from django.shortcuts import get_object_or_404, redirect
 
 from rest_framework.decorators import authentication_classes, permission_classes
 from rest_framework.authentication import SessionAuthentication, TokenAuthentication
 from rest_framework.permissions import IsAuthenticated
+from django.conf import settings
+import requests
 
 
 
@@ -55,5 +57,48 @@ def test_token(request):
     return Response("Passed for {}".format(request.user.email))
 
 
+@api_view(['POST'])
+def google(request):
+    auth_code = request.data['code']
+    client_secret = settings.GOOGLE_CLIENT_SECRET
+    client_id = settings.GOOGLE_CLIENT_ID
+    result = requests.post(
+        url=settings.GOOGLE_OAUTH_ENDPOINT,
+        data={
+            "code": auth_code,
+            "client_id": client_id,
+            "client_secret": client_secret,
+            "redirect_uri": "http://localhost:8080",
+            "grant_type": "authorization_code"
+
+        }
+    )
+    
+    
+    if result.ok:
+        auth_data = result.json()
+        access_token = auth_data['access_token']
+        result = requests.get(
+            url=settings.GOOGLE_USERINFO_URL,
+            params={
+                "access_token": access_token,
+            })
+        
+        if result.ok:
+            userinfo = result.json()
+            email = userinfo['email']
+            given_name = userinfo['given_name']
+            family_name = userinfo['family_name']
+
+            return redirect("http://localhost:8080")
+        
+        else:
+            error = {'status': result.status_code,
+                     'error': result}
+        
+    else:
+        error = {'status': result.status_code,
+                 'error': result}
 
 
+    return redirect("http://localhost:8080/login", error=error)
