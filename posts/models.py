@@ -21,7 +21,7 @@ class Post(models.Model):
     title = models.CharField(max_length=512, blank=False, null=False)
     body = models.TextField(blank=False, null=False)    
     created_at = models.DateTimeField(auto_now_add=True)
-    uploaded_at = models.DateTimeField(auto_now=True)
+    updated_at = models.DateTimeField(auto_now=True)
 
 
 

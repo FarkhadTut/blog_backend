@@ -135,6 +135,12 @@ MEDIA_URL = '/media/'
 MEDIA_ROOT = os.path.join(BASE_DIR, 'media')
 
 
+###
+REST_FRAMEWORK = {
+    'DEFAULT_PAGINATION_CLASS': 'rest_framework.pagination.LimitOffsetPagination',
+    'PAGE_SIZE': 100
+}
+
 # CORS ALLOWED ORIGINS
 CORS_ALLOWED_ORIGINS = [
     'http://localhost:8080',
