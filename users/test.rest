@@ -17,14 +17,13 @@ Content-Type: application/json
     "username": "haha",
     "email": "farkhadnavoi@yandex.com",
     "password": "123"
-    
 }
 
 
 ###
-GET http://127.0.0.1:8000/api/test_token
+GET http://127.0.0.1:8000/api/auth/test_token
 Content-Type: application/json
-Authorization: Token dc827e2f5747db614058121fa0e7a2ee9fdb0eed
+Authorization: Token 16a93ec5b8d016958ee8b2c5a2a6ad4b0568a281
 
 {}
 ######

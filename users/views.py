@@ -16,9 +16,15 @@ from django.conf import settings
 import requests
 import datetime
 import secrets
-
+from transliterate import translit
 
 def createUsername(first,last):
+    first = first.strip().replace(' ', '')
+    last = last.strip().replace(' ', '')
+
+    first = "".join([c for c in translit(first, "ru", reversed=True) if c.isalpha()])
+    last = "".join([c for c in translit(last, "ru", reversed=True) if c.isalpha()])
+
     username = None
     if len(first)+len(last)<15:
         username = first + last
@@ -36,7 +42,6 @@ def createUsername(first,last):
 
 @api_view(['POST'])
 def login(request):
-
     user = User.objects.filter(username=request.data['username'])
     if user.exists():
         user = user.first()
@@ -85,13 +90,14 @@ def google(request):
     auth_code = request.data['code']
     client_secret = settings.GOOGLE_CLIENT_SECRET
     client_id = settings.GOOGLE_CLIENT_ID
+    redirect_url = settings.GOOGLE_REDIRECT_URL
     result = requests.post(
         url=settings.GOOGLE_OAUTH_ENDPOINT,
         data={
             "code": auth_code,
             "client_id": client_id,
             "client_secret": client_secret,
-            "redirect_uri": "http://localhost:8080",
+            "redirect_uri": redirect_url,
             "grant_type": "authorization_code"
 
         }
@@ -153,3 +159,11 @@ def google(request):
 
 
     return Response(error, status=result.status_code)
+
+
+@api_view(['GET'])
+@authentication_classes([SessionAuthentication, TokenAuthentication])
+@permission_classes([IsAuthenticated])
+def logout(request):
+    request.user.auth_token.delete()
+    return Response(status=status.HTTP_200_OK)
