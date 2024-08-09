@@ -2,30 +2,26 @@ from django.db import models
 from users.models import Profile
 import os 
 import datetime
+from django.utils.deconstruct import deconstructible
 # Create your models here.
 
-def get_upload_to(*args, **kwargs):
 
-    def func(*args, **kwargs):
-        return 
-    
-    
-    return func
+@deconstructible
+class PathAndRename(object):
+   def __init__(self, base_folder):
+       self.base_folder = base_folder
+
+   def __call__(self, instance, filename):
+        now = datetime.datetime.now()
+        year = now.year
+        month = now.strftime('%m')  # Zero-padded month
+        upload_to = os.path.join(self.base_folder, str(year), str(month), filename)
+        return upload_to
 
 
-@get_upload_to
-def get_path(instance, filename):
-        # Get the current year and month
-    now = datetime.datetime.now()
-    year = now.year
-    month = now.strftime('%m')  # Zero-padded month
-    
-    # Define the upload path
-    upload_to = os.path.join(base_folder, str(year), str(month), filename)
-    return upload_to
 
 class Post(models.Model):
-    image = models.ImageField(upload_to=get_upload_to(base_folder='post_thumbnails'))
+    image = models.ImageField(upload_to=PathAndRename(base_folder='post_thumbnails'))
     title = models.CharField(max_length=512, blank=False, null=False)
     body = models.TextField(blank=False, null=False)  
     author = models.ForeignKey(Profile, related_name='posts', on_delete=models.CASCADE)  
@@ -36,7 +32,7 @@ class Post(models.Model):
 
 class Picture(models.Model):
     post = models.ForeignKey(to=Post, related_name='pictures', on_delete=models.CASCADE)
-    image = models.ImageField(upload_to=get_upload_to(base_folder='post_pictures'))
+    image = models.ImageField(upload_to=PathAndRename(base_folder='post_pictures'))
     description = models.CharField(max_length=512, blank=True, null=True)
 
     def __str__(self):

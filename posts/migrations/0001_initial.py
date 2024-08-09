@@ -27,7 +27,7 @@ class Migration(migrations.Migration):
             name='Picture',
             fields=[
                 ('id', models.BigAutoField(auto_created=True, primary_key=True, serialize=False, verbose_name='ID')),
-                ('image', models.ImageField(upload_to=posts.models.get_upload_to)),
+                ('image', models.ImageField(upload_to=posts.models.PathAndRename(base_folder='post_pictures'))),
                 ('description', models.CharField(blank=True, max_length=512, null=True)),
                 ('post', models.ForeignKey(on_delete=django.db.models.deletion.CASCADE, related_name='pictures', to='posts.post')),
             ],
