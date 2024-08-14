@@ -1,18 +1,20 @@
 from django.urls import re_path, include
 from .views import (
-    login,
-    signup,
-    test_token,
-    google,
-    logout
+    LoginView,
+    Signup,
+    TestToken,
+    Google,
+    LogoutView,
+    UserView
     )
 
 
 
 urlpatterns = [
-    re_path('login', login, ),
-    re_path('signup', signup, ),
-    re_path('test_token', test_token, ),
-    re_path('google', google ),
-    re_path('logout', logout ),
+    re_path('login', LoginView.as_view(), name='login'),
+    re_path('signup', Signup.as_view(), name='signup'),
+    re_path('test_token', TestToken.as_view(), name='test_token'),
+    re_path('google', Google.as_view(), name='google'),
+    re_path('logout', LogoutView.as_view(), name='logout'),
+    re_path('account', UserView.as_view(), name='account'),
 ]

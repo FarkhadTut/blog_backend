@@ -43,10 +43,33 @@ def createUsername(first,last):
                 return username_with_time
 
 
+def create_token(user):
+    now = datetime.datetime.now(tz=datetime.UTC)
+    expiration = (now + datetime.timedelta(minutes=60)).timestamp()
+    iat = now.timestamp()
+
+    payload = { 
+        'id': user.id,
+        'exp': expiration,
+        'iat': iat
+    }
+    print(payload)
+
+    token = jwt.encode(payload, settings.SECRET_KEY, algorithm='HS256')
+    return token
+
 class UserView(APIView):
+    authentication_classes = [TokenAuthentication]
     def get(self, request, *args, **kwargs):
-        user_id = request.data['user'].id
-        user = User.objects.filter(id=user_id).first()
+        token = request.COOKIES.get('token')
+        if not token:
+            raise AuthenticationFailed("Unauthenticated!")
+        try:
+            payload = jwt.decode(jwt=token, key=settings.SECRET_KEY, algorithms=['HS256'])
+        except jwt.ExpiredSignatureError:
+            raise AuthenticationFailed('Unauthenticated!')
+        
+        user = User.objects.filter(id=payload['id']).first()
         serializer = UserSerializer(instance=user)
         return Response(serializer.data, status=status.HTTP_200_OK)
         
@@ -66,7 +89,8 @@ class LoginView(APIView):
             }, status=status.HTTP_404_NOT_FOUND)
         
         
-        
+        token = create_token(user)
+
         serializer = UserSerializer(instance=user)
         response = Response()
         response.data = {
@@ -87,10 +111,12 @@ class Signup(APIView):
             user = User.objects.get(username=request.data['username'])
             user.set_password(request.data['password'])
             user.save()
+            token = create_token(user)
             response = Response()
             response.data = {
                 "user": serializer.data,
             }
+            response.set_cookie(key="token", value=token, httponly=True)
             return response
         
         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
@@ -155,16 +181,18 @@ class Google(APIView):
                         user = User.objects.get(username=username)
                         user.set_password(password)
                         user.save()
+                        token, created = Token.objects.get_or_create(user=user)
                         serializer = UserSerializer(instance=user)
-                        return Response({'user': serializer.data})
+                        return Response({'token': token.key, 'user': serializer.data})
                     
                     error = {'error': 'Serializer error.'}
                     return Response(error, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
                 
                 else:
                     user = User.objects.get(email=email)
+                    token, created = Token.objects.get_or_create(user=user)
                     serializer = UserSerializer(instance=user)
-                    return Response({"user": serializer.data}, status=status.HTTP_200_OK)
+                    return Response({'token':token.key, "user": serializer.data}, status=status.HTTP_200_OK)
 
             
             else:

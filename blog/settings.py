@@ -39,6 +39,7 @@ INSTALLED_APPS = [
     'django.contrib.messages',
     'django.contrib.staticfiles',
     'rest_framework',
+    # 'rest_framework.authtoken',
     'corsheaders',
     'django_ckeditor_5',
 
@@ -114,10 +115,8 @@ AUTH_PASSWORD_VALIDATORS = [
 
 LANGUAGE_CODE = 'en-us'
 
-TIME_ZONE = 'UTC'
-
+TIME_ZONE = 'Asia/Tashkent'
 USE_I18N = True
-
 USE_TZ = True
 
 
@@ -145,14 +144,19 @@ REST_FRAMEWORK = {
     'DEFAULT_PERMISSION_CLASSES': [
         # 'rest_framework.permissions.IsAuthenticated',
     ],
+
+    "DEFAULT_AUTHENTICATION_CLASSES":[
+        'rest_framework.authentication.SessionAuthentication',
+    ]
 }
+SESSION_ENGINE = 'django.contrib.sessions.backends.db'
 
 # CORS ALLOWED ORIGINS
 CORS_ALLOWED_ORIGINS = [
     'http://localhost:8080',
     'http://192.168.1.40:8080',
 ]
-
+CORS_ALLOW_CREDENTIALS = True
 
 ## google auth credentials
 GOOGLE_CLIENT_SECRET = "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"
