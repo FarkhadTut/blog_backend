@@ -136,6 +136,12 @@ MEDIA_ROOT = os.path.join(BASE_DIR, 'media')
 STATIC_URL = "static/"
 STATIC_ROOT = os.path.join(BASE_DIR, 'static')
 
+
+CSRF_COOKIE_HTTPONLY = True
+CSRF_COOKIE_SECURE = True 
+CSRF_COOKIE_SAMESITE = 'Strict'
+SESSION_COOKIE_SAMESITE = 'Strict'
+
 AUTH_USER_MODEL = "users.User"
 
 ###
@@ -150,7 +156,8 @@ REST_FRAMEWORK = {
     ]
 }
 SESSION_ENGINE = 'django.contrib.sessions.backends.db'
-
+SESSION_EXPIRE_AT_BROWSER_CLOSE = False
+SESSION_COOKIE_AGE = 10
 # CORS ALLOWED ORIGINS
 CORS_ALLOWED_ORIGINS = [
     'http://localhost:8080',

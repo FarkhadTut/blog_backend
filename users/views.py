@@ -11,7 +11,7 @@ from django.shortcuts import get_object_or_404, redirect
 
 from rest_framework.decorators import authentication_classes, permission_classes
 from rest_framework.authentication import SessionAuthentication, TokenAuthentication
-from rest_framework.permissions import IsAuthenticated
+from rest_framework.permissions import IsAuthenticated, AllowAny
 from rest_framework.exceptions import AuthenticationFailed
 from django.conf import settings
 import requests
@@ -21,6 +21,10 @@ from transliterate import translit
 from .permissions import UserPermission
 import jwt, datetime
 from django.utils import timezone
+from django.contrib.auth import authenticate, login, logout
+from django.contrib.sessions.models import Session
+from django.utils.decorators import method_decorator
+from django.views.decorators.csrf import ensure_csrf_cookie
 
 def createUsername(first,last):
     first = first.strip().replace(' ', '')
@@ -44,15 +48,18 @@ def createUsername(first,last):
 
 
 class UserView(APIView):
+    permission_classes = [IsAuthenticated,]
+    authentication_classes = [SessionAuthentication]
     def get(self, request, *args, **kwargs):
-        user_id = request.data['user'].id
+        user_id = request.session.get('user_id')
         user = User.objects.filter(id=user_id).first()
         serializer = UserSerializer(instance=user)
         return Response(serializer.data, status=status.HTTP_200_OK)
         
 
 class LoginView(APIView):
-    
+    permission_classes = [AllowAny,]
+    authentication_classes = []
     def post(self, request, *args, **kwargs):
         user = User.objects.filter(username=request.data['username'])
         if user.exists():
@@ -65,20 +72,26 @@ class LoginView(APIView):
                 "detail": "Not found.",
             }, status=status.HTTP_404_NOT_FOUND)
         
+
+        user = authenticate(request, username=request.data['username'], password=request.data['password'])
         
-        
+        login(request, user)
+        request.session['user_id'] = user.id
+
         serializer = UserSerializer(instance=user)
         response = Response()
         response.data = {
             "user": serializer.data,
         }
-
+        # response.set_cookie('sessionid', )
         return response
 
 
 
 
 class Signup(APIView):
+    permission_classes = [AllowAny,]
+    authentication_classes = []
     def post(self, request, *args, **kwargs):
         print("registering...")
         serializer = UserSerializer(data=request.data)
@@ -97,14 +110,11 @@ class Signup(APIView):
  
 
 
-class TestToken(APIView):
-    permission_classes = [IsAuthenticated]
-    authentication_classes = [SessionAuthentication, TokenAuthentication] 
-    def get(self, request, *args, **kwargs):
-        return Response("Passed for {}".format(request.user.email))
 
 
 class Google(APIView):
+    permission_classes = [AllowAny,]
+    authentication_classes = []
     def post(self, request, *args, **kwargs):
         auth_code = request.data['code']
         client_secret = settings.GOOGLE_CLIENT_SECRET
@@ -164,6 +174,8 @@ class Google(APIView):
                 else:
                     user = User.objects.get(email=email)
                     serializer = UserSerializer(instance=user)
+                    login(request, user)
+                    request.session['user_id'] = user.id
                     return Response({"user": serializer.data}, status=status.HTTP_200_OK)
 
             
@@ -178,9 +190,19 @@ class Google(APIView):
 
 
 class LogoutView(APIView):
-
+    permission_classes = [IsAuthenticated,]
+    authentication_classes = [SessionAuthentication]
     def get(self, request, *args, **kwargs):
         response = Response()
-        response.delete_cookie('token')
+        logout(request)
         response.data = {'message: success'}
         return response
+    
+
+class CsrfTokenView(APIView):
+    @method_decorator(ensure_csrf_cookie)
+    def get(self, request, *args, **kwargs):
+        response = Response()
+        response.data = {'message: success'}
+        return response
+        
