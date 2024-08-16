@@ -25,7 +25,6 @@ class PostsSearchViewSet(ModelViewSet):
         search_query = request.query_params['q']
         posts = Post.objects.filter(body__contains=search_query)
 
-        sleep(2)
         if len(posts) != 0:
             results = self.paginate_queryset(posts)
             serializer = PostSerializer(instance=results, many=True)
@@ -38,7 +37,8 @@ class CommentViewSet(ModelViewSet):
     queryset = Comment.objects.all()
     serializer_class = CommentSerializer
     ordering = ['-created_at']
-    
+    authentication_classes = [SessionAuthentication]
+    permission_classes = [IsAuthenticated,]
 
     def list(self, request, *args, **kwargs):
         post_id = kwargs['post_id']

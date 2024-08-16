@@ -16,7 +16,7 @@ import os
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
 BASE_DIR = Path(__file__).resolve().parent.parent
 
-
+DATA_UPLOAD_MAX_MEMORY_SIZE = 5242880
 # Quick-start development settings - unsuitable for production
 # See https://docs.djangoproject.com/en/4.0/howto/deployment/checklist/
 
@@ -27,6 +27,9 @@ SECRET_KEY = 'django-insecure-!*x&@k43k_2(_mj5x@h_+*752ufpb!(444+1_j-1!ta89^=32q
 DEBUG = True
 
 ALLOWED_HOSTS = []
+
+# change in pproduction!!!
+BACKEND_BASE_URL = "http://localhost:8000"
 
 
 # Application definition
@@ -41,7 +44,8 @@ INSTALLED_APPS = [
     'rest_framework',
     # 'rest_framework.authtoken',
     'corsheaders',
-    'django_ckeditor_5',
+    'debug_toolbar',
+    'django_quill',
 
     'posts',
     'users',
@@ -57,6 +61,7 @@ MIDDLEWARE = [
     'django.middleware.clickjacking.XFrameOptionsMiddleware',
     "corsheaders.middleware.CorsMiddleware",
     "django.middleware.common.CommonMiddleware",
+    "debug_toolbar.middleware.DebugToolbarMiddleware",
 ]
 
 ROOT_URLCONF = 'blog.urls'
@@ -124,20 +129,24 @@ USE_TZ = True
 # https://docs.djangoproject.com/en/4.0/howto/static-files/
 
 STATIC_URL = 'static/'
-
+STATIC_ROOT = os.path.join(BASE_DIR, 'static')
+MEDIA_URL = '/media/'
+MEDIA_ROOT = os.path.join(BASE_DIR, 'media')
+CKEDITOR_UPLOAD_BASE_URL = 'google.com'
 # Default primary key field type
 # https://docs.djangoproject.com/en/4.0/ref/settings/#default-auto-field
 
 DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
 
 
-MEDIA_URL = '/media/'
-MEDIA_ROOT = os.path.join(BASE_DIR, 'media')
-STATIC_URL = "static/"
-STATIC_ROOT = os.path.join(BASE_DIR, 'static')
 
 
-CSRF_COOKIE_HTTPONLY = True
+
+CSRF_TRUSTED_ORIGINS = [
+    'http://localhost:8080',
+]
+
+CSRF_COOKIE_HTTPONLY = False
 CSRF_COOKIE_SECURE = True 
 CSRF_COOKIE_SAMESITE = 'Strict'
 SESSION_COOKIE_SAMESITE = 'Strict'
@@ -157,13 +166,19 @@ REST_FRAMEWORK = {
 }
 SESSION_ENGINE = 'django.contrib.sessions.backends.db'
 SESSION_EXPIRE_AT_BROWSER_CLOSE = False
-SESSION_COOKIE_AGE = 10
+# SESSION_COOKIE_AGE = 60*60
 # CORS ALLOWED ORIGINS
 CORS_ALLOWED_ORIGINS = [
     'http://localhost:8080',
     'http://192.168.1.40:8080',
 ]
 CORS_ALLOW_CREDENTIALS = True
+
+
+##django toolbar
+INTERNAL_IPS = [
+    '127.0.0.1',
+]
 
 ## google auth credentials
 GOOGLE_CLIENT_SECRET = "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"
@@ -174,95 +189,26 @@ GOOGLE_REDIRECT_URL = "http://localhost:8080"
 
 
 
-## WYSIWYG CKEDITOR
-
-
-customColorPalette = [
-        {
-            'color': 'hsl(4, 90%, 58%)',
-            'label': 'Red'
-        },
-        {
-            'color': 'hsl(340, 82%, 52%)',
-            'label': 'Pink'
-        },
-        {
-            'color': 'hsl(291, 64%, 42%)',
-            'label': 'Purple'
-        },
-        {
-            'color': 'hsl(262, 52%, 47%)',
-            'label': 'Deep Purple'
-        },
-        {
-            'color': 'hsl(231, 48%, 48%)',
-            'label': 'Indigo'
-        },
-        {
-            'color': 'hsl(207, 90%, 54%)',
-            'label': 'Blue'
-        },
-    ]
-
-CKEDITOR_5_CONFIGS = {
-    'default': {
-        'toolbar': ['heading', '|', 'bold', 'italic', 'link',
-                    'bulletedList', 'numberedList', 'blockQuote', 'imageUpload', ],
-
-    },
-    'extends': {
-        'blockToolbar': [
-            'paragraph', 'heading1', 'heading2', 'heading3',
-            '|',
-            'bulletedList', 'numberedList',
-            '|',
-            'blockQuote',
-        ],
-        'toolbar': ['heading', '|', 'outdent', 'indent', '|', 'bold', 'italic', 'link', 'underline', 'strikethrough',
-        'code','subscript', 'superscript', 'highlight', '|', 'codeBlock', 'sourceEditing', 'insertImage',
-                    'bulletedList', 'numberedList', 'todoList', '|',  'blockQuote', 'imageUpload', '|',
-                    'fontSize', 'fontFamily', 'fontColor', 'fontBackgroundColor', 'mediaEmbed', 'removeFormat',
-                    'insertTable',],
-        'image': {
-            'toolbar': ['imageTextAlternative', '|', 'imageStyle:alignLeft',
-                        'imageStyle:alignRight', 'imageStyle:alignCenter', 'imageStyle:side',  '|'],
-            'styles': [
-                'full',
-                'side',
-                'alignLeft',
-                'alignRight',
-                'alignCenter',
-            ]
-
-        },
-        'table': {
-            'contentToolbar': [ 'tableColumn', 'tableRow', 'mergeTableCells',
-            'tableProperties', 'tableCellProperties' ],
-            'tableProperties': {
-                'borderColors': customColorPalette,
-                'backgroundColors': customColorPalette
-            },
-            'tableCellProperties': {
-                'borderColors': customColorPalette,
-                'backgroundColors': customColorPalette
-            }
-        },
-        'heading' : {
-            'options': [
-                { 'model': 'paragraph', 'title': 'Paragraph', 'class': 'ck-heading_paragraph' },
-                { 'model': 'heading1', 'view': 'h1', 'title': 'Heading 1', 'class': 'ck-heading_heading1' },
-                { 'model': 'heading2', 'view': 'h2', 'title': 'Heading 2', 'class': 'ck-heading_heading2' },
-                { 'model': 'heading3', 'view': 'h3', 'title': 'Heading 3', 'class': 'ck-heading_heading3' }
-            ]
-        }
-    },
-    'list': {
-        'properties': {
-            'styles': 'true',
-            'startIndex': 'true',
-            'reversed': 'true',
-        }
-    }
-}
-
+## WYSIWYG 
+# QUILL_CONFIGS = {
+#     'default':{
+#         'theme': 'snow',
+#         'modules': {
+#             'syntax': True,
+#             'toolbar': [
+#                 [
+#                     {'font': []},
+#                     {'header': []},
+#                     {'align': []},
+#                     'bold', 'italic', 'underline', 'strike', 'blockquote',
+#                     {'color': []},
+#                     {'background': []},
+#                 ],
+#                 ['code-block', 'link'],
+#                 ['image','blockquote', 'table'],
+#                 ['clean'],
+#             ]
+#         }
+#     }
+# }
 

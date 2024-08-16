@@ -26,9 +26,19 @@ class CommentSerializer(serializers.ModelSerializer):
 
 
 class PostSerializer(serializers.ModelSerializer):
+
+    body = serializers.SerializerMethodField()
+    author_username = serializers.SerializerMethodField()
     pictures = PictureSerializer(many=True, read_only=True)
     comments = CommentSerializer(many=True, read_only=True)
+
+    def get_body(self, instance):
+        return instance.body.html
+    
+    def get_author_username(self, instance):
+        return instance.author.username
+
     class Meta:
         model = Post
-        fields = ['id', 'title', 'pictures', 'comments', 'body', 'created_at', 'updated_at']
+        fields = ['id', 'author_username', 'author', 'title', 'pictures', 'comments', 'body', 'created_at', 'updated_at']
     

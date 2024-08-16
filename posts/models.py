@@ -4,7 +4,7 @@ import os
 import datetime
 from django.utils.deconstruct import deconstructible
 # Create your models here.
-from django_ckeditor_5.fields import CKEditor5Field
+from django_quill.fields import QuillField
 
 @deconstructible
 class PathAndRename(object):
@@ -23,7 +23,7 @@ class PathAndRename(object):
 class Post(models.Model):
     image = models.ImageField(upload_to=PathAndRename(base_folder='post_thumbnails'))
     title = models.CharField(max_length=512, blank=False, null=False)
-    body = CKEditor5Field(blank=False, null=False)  
+    body = QuillField(blank=False, null=False)  
     author = models.ForeignKey(User, related_name='posts', on_delete=models.CASCADE)  
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)

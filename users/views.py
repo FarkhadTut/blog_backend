@@ -24,7 +24,7 @@ from django.utils import timezone
 from django.contrib.auth import authenticate, login, logout
 from django.contrib.sessions.models import Session
 from django.utils.decorators import method_decorator
-from django.views.decorators.csrf import ensure_csrf_cookie
+from django.views.decorators.csrf import ensure_csrf_cookie, csrf_protect
 
 def createUsername(first,last):
     first = first.strip().replace(' ', '')
@@ -60,6 +60,8 @@ class UserView(APIView):
 class LoginView(APIView):
     permission_classes = [AllowAny,]
     authentication_classes = []
+
+    # @method_decorator(csrf_protect)
     def post(self, request, *args, **kwargs):
         user = User.objects.filter(username=request.data['username'])
         if user.exists():
@@ -72,9 +74,11 @@ class LoginView(APIView):
                 "detail": "Not found.",
             }, status=status.HTTP_404_NOT_FOUND)
         
-
-        user = authenticate(request, username=request.data['username'], password=request.data['password'])
-        
+        # user = authenticate(request, username=request.data['username'], password=request.data['password'])
+        # if user is None:
+        #     user = authenticate(request, email=request.data['username'], password=request.data['password'])
+            
+        print("Authenticated:", user)
         login(request, user)
         request.session['user_id'] = user.id
 
