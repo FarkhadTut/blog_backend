@@ -1,21 +1,25 @@
 from rest_framework import viewsets
-from .models import Post, Picture, Comment
+from .models import Post, Picture, Comment, Category
 from rest_framework.response import Response
 from rest_framework.decorators import permission_classes, authentication_classes
 from rest_framework.viewsets import ModelViewSet
-from .serializers import PictureSerializer, PostSerializer, CommentSerializer
+from .serializers import *
 from rest_framework import status
 from blog.drf_defaults import MyPaginator
 from users.models import User
 from time import sleep 
-from rest_framework.authentication import SessionAuthentication, TokenAuthentication
-from rest_framework.permissions import IsAuthenticated
+from rest_framework.authentication import SessionAuthentication
+from .permissions import CustomPermission, IsAdminUserOrReadOnly
 
 
 class PostsViewSet(ModelViewSet):
     queryset = Post.objects.all()
     serializer_class = PostSerializer
     ordering = ['-created_at']
+    permission_classes = [CustomPermission,]
+
+    def create(self, request, *args, **kwargs):
+        return super().create(request, *args, **kwargs)
 
 
 class PostsSearchViewSet(ModelViewSet):
@@ -38,7 +42,7 @@ class CommentViewSet(ModelViewSet):
     serializer_class = CommentSerializer
     ordering = ['-created_at']
     authentication_classes = [SessionAuthentication]
-    permission_classes = [IsAuthenticated,]
+    permission_classes = [CustomPermission,]
 
     def list(self, request, *args, **kwargs):
         post_id = kwargs['post_id']
@@ -53,3 +57,11 @@ class CommentViewSet(ModelViewSet):
 
     def create(self, request, *args, **kwargs):
         return super().create(request, *args, **kwargs)
+    
+class CategoryViewSet(ModelViewSet):
+    queryset = Category.objects.all()
+    serializer_class = CategorySerializer
+    permission_classes = [IsAdminUserOrReadOnly]
+    pagination_class = None
+    
+

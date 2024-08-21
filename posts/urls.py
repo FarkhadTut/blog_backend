@@ -6,6 +6,7 @@ router = DefaultRouter()
 router.register(r'posts', PostsViewSet)
 router.register(r'posts/(?P<post_id>\d+)/comments', CommentViewSet, basename="CommentByPostId")
 router.register(r'search', PostsSearchViewSet, basename='PostSearch')
+router.register(r'category', CategoryViewSet, basename='Category')
 
 urlpatterns = [
     path('', include(router.urls)),
