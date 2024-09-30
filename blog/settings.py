@@ -188,7 +188,6 @@ GOOGLE_USERINFO_URL = "https://www.googleapis.com/oauth2/v2/userinfo"
 GOOGLE_REDIRECT_URL = "http://localhost:8080"
 
 
-
 ## WYSIWYG 
 # QUILL_CONFIGS = {
 #     'default':{

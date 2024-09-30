@@ -53,12 +53,16 @@ class Post(models.Model):
     image = models.ImageField(upload_to=PathAndRename(base_folder='post_thumbnails'))
     title = models.CharField(max_length=512, blank=False, null=False)
     body = QuillField(blank=False, null=False)  
+    body_text = models.TextField(editable=False)
     author = models.ForeignKey(User, related_name='posts', on_delete=models.CASCADE)  
     category = models.ForeignKey(Category, related_name='posts', on_delete=models.CASCADE)
     tags = models.ManyToManyField(Tags, related_name="posts")
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
 
+    def save(self, *args, **kwargs):
+        self.body_text = self.body.plain
+        return super().save(*args, **kwargs)
 
     def __str__(self):
         return self.title
@@ -79,3 +83,15 @@ class Comment(models.Model):
     post = models.ForeignKey(Post, related_name='comments', on_delete=models.CASCADE)
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
+    parent = models.ForeignKey('self' , null=True , blank=True , on_delete=models.CASCADE , related_name='replies')
+
+    @property
+    def children(self):
+        return Comment.objects.filter(parent=self).reverse()
+    
+
+    @property
+    def is_parent(self):
+        if self.parent is None:
+            return True
+        return False

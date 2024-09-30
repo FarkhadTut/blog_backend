@@ -37,6 +37,12 @@ class IsAdminUserOrReadOnly(BasePermission):
     
 
     def has_object_permission(self, request, view, obj):
-        # if request.method in ["DELETE", "PUT", "PATCH"]:
-        #     if request.user == obj.author:
+        if request.method in ["DELETE", "PUT", "PATCH"]:
+            if not request.user.is_staff:
+                if request.user == obj.author:
+                    return True
+                else:
+                    return False
+            else:
+                return True
         return super().has_object_permission(request, view, obj)
